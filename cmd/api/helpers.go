@@ -20,7 +20,7 @@ func getIdFromURL(r *http.Request) (int64, error) {
 	return id, nil
 }
 
-func writeJSON(w http.ResponseWriter, data any, status int, headers http.Header) error {
+func (app *application) writeJSON(w http.ResponseWriter, data any, status int, headers http.Header) error {
 	js, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err

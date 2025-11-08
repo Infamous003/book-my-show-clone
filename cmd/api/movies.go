@@ -30,7 +30,7 @@ func (app *application) getMovieHandler(w http.ResponseWriter, r *http.Request) 
 	headers := http.Header{}
 	headers.Set("Languages", "en")
 
-	if err = writeJSON(w, movie, 200, headers); err != nil {
+	if err = app.writeJSON(w, movie, 200, headers); err != nil {
 		w.Write([]byte("the server encountered an error"))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
