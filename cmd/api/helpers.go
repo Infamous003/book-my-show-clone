@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -37,5 +39,51 @@ func (app *application) writeJSON(w http.ResponseWriter, data envelope, status i
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	w.Write(js)
+	return nil
+}
+
+func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any) error {
+	r.Body = http.MaxBytesReader(w, r.Body, 1048576) // limiting body size to 1MB
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+
+	err := d.Decode(dst)
+
+	var (
+		syntaxError           *json.SyntaxError
+		unmarshalTypeError    *json.UnmarshalTypeError
+		invalidUnmarshalError *json.InvalidUnmarshalError
+		maxBytesError         *http.MaxBytesError
+	)
+
+	if err != nil {
+		switch {
+		case errors.As(err, &syntaxError):
+			return fmt.Errorf("body contains badly-formed JSON (at character: %d)", syntaxError.Offset)
+
+		case errors.Is(err, io.ErrUnexpectedEOF):
+			return fmt.Errorf("body contains badly-formed JSON")
+
+		case errors.Is(err, io.EOF):
+			return fmt.Errorf("body must not be empty")
+
+		case errors.As(err, &unmarshalTypeError):
+			if unmarshalTypeError.Field == "" {
+				return fmt.Errorf("%s is required", unmarshalTypeError.Field)
+			}
+			return fmt.Errorf("body contains incorrect JSON type for field: %s", unmarshalTypeError.Field)
+
+		case errors.As(err, &invalidUnmarshalError):
+			panic(err)
+
+		case errors.As(err, &maxBytesError):
+			return fmt.Errorf("body must not be larger than %d bytes(1 MB)", maxBytesError.Limit)
+		}
+	}
+
+	if err = d.Decode(&struct{}{}); err == nil {
+		return fmt.Errorf("body must only contain a single JSON value")
+	}
+
 	return nil
 }

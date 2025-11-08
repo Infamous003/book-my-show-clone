@@ -34,3 +34,27 @@ func (app *application) getMovieHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 }
+
+func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
+	// creating a placeholder struct to store incoming expected values
+	var input struct {
+		Title     string    `json:"title"`
+		Year      int32     `json:"year"`
+		Runtime   int32     `json:"runtime"`
+		Genres    []*string `json:"genres"`
+		Storyline string    `json:"storyline"`
+		Languages []*string `json:"languages"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	err = app.writeJSON(w, envelope{"movie": input}, http.StatusCreated, nil)
+	if err != nil {
+		app.errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+}
