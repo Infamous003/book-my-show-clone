@@ -10,8 +10,7 @@ import (
 func (app *application) getMovieHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := getIdFromURL(r)
 	if err != nil {
-		w.Write([]byte(err.Error()))
-		w.WriteHeader(http.StatusNotFound)
+		app.notFoundResponse(w)
 		return
 	}
 
@@ -30,9 +29,8 @@ func (app *application) getMovieHandler(w http.ResponseWriter, r *http.Request) 
 	headers := http.Header{}
 	headers.Set("Languages", "en")
 
-	if err = app.writeJSON(w, movie, 200, headers); err != nil {
-		w.Write([]byte("the server encountered an error"))
-		w.WriteHeader(http.StatusInternalServerError)
+	if err = app.writeJSON(w, envelope{"movie": movie}, 200, headers); err != nil {
+		app.serverErrorResponse(w)
 		return
 	}
 }
