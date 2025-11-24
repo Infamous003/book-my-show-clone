@@ -15,15 +15,16 @@ func (app *application) getMovieHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	movie := data.Movie{
-		ID:        id,
-		Title:     "Puss in Boots",
-		CreatedAt: time.Now(),
-		Year:      2011,
-		Runtime:   107,
-		Genres:    []string{"Animation", "Adventure", "Fantasy"},
-		Storyline: "A story about a criminal cat",
-		Version:   1,
-		Languages: []string{"English", "French", "Spanish", "Hindi"},
+		ID:          id,
+		Title:       "Puss in Boots",
+		CreatedAt:   time.Now(),
+		Description: "A story about a criminal cat",
+		Year:        2011,
+		Runtime:     107,
+		Genres:      []string{"Animation", "Adventure", "Fantasy"},
+		Version:     1,
+		Languages:   []string{"English", "French", "Spanish", "Hindi"},
+		UpdatedAt:   time.Now(),
 	}
 
 	headers := http.Header{}
@@ -38,12 +39,12 @@ func (app *application) getMovieHandler(w http.ResponseWriter, r *http.Request) 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
 	// creating a placeholder struct to store incoming expected values
 	var input struct {
-		Title     string    `json:"title"`
-		Year      int32     `json:"year"`
-		Runtime   int32     `json:"runtime"`
-		Genres    []*string `json:"genres"`
-		Storyline string    `json:"storyline"`
-		Languages []*string `json:"languages"`
+		Title       string    `json:"title"`
+		Description string    `json:"description"`
+		Year        int32     `json:"year"`
+		Runtime     int32     `json:"runtime"`
+		Genres      []*string `json:"genres"`
+		Languages   []*string `json:"languages"`
 	}
 
 	err := app.readJSON(w, r, &input)
