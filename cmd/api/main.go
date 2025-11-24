@@ -7,9 +7,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
 
 type config struct {
@@ -36,15 +33,9 @@ func main() {
 		logger: logger,
 	}
 
-	r := chi.NewRouter()
-	r.Use(middleware.Logger) // Chi's logger logs request
-
-	appRouter := app.routes()
-	r.Mount("/api/v1", appRouter)
-
 	s := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.port),
-		Handler:      r,
+		Handler:      app.routes(),
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
 		IdleTimeout:  5 * time.Second,

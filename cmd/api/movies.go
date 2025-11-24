@@ -39,12 +39,12 @@ func (app *application) getMovieHandler(w http.ResponseWriter, r *http.Request) 
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
 	// creating a placeholder struct to store incoming expected values
 	var input struct {
-		Title       string    `json:"title"`
-		Description string    `json:"description"`
-		Year        int32     `json:"year"`
-		Runtime     int32     `json:"runtime"`
-		Genres      []*string `json:"genres"`
-		Languages   []*string `json:"languages"`
+		Title       string       `json:"title"`
+		Description string       `json:"description"`
+		Year        int32        `json:"year"`
+		Runtime     data.Runtime `json:"runtime"`
+		Genres      []*string    `json:"genres"`
+		Languages   []*string    `json:"languages"`
 	}
 
 	err := app.readJSON(w, r, &input)
