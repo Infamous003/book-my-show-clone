@@ -10,6 +10,10 @@ import (
 func (app *application) routes() http.Handler {
 	r := chi.NewRouter()
 
+	// custom errors for 404 and 405
+	r.NotFound(app.notFoundResponse)
+	r.MethodNotAllowed(app.methodNotAllowedResponse)
+
 	r.Get("/", app.rootHandler)
 	r.Get("/healthcheck", app.healthcheckHandler)
 	r.Get("/movies/{id}", app.getMovieHandler)

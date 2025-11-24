@@ -10,7 +10,7 @@ import (
 func (app *application) getMovieHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := getIdFromURL(r)
 	if err != nil {
-		app.notFoundResponse(w)
+		app.notFoundResponse(w, r)
 		return
 	}
 
@@ -31,7 +31,7 @@ func (app *application) getMovieHandler(w http.ResponseWriter, r *http.Request) 
 	headers.Set("Languages", "en")
 
 	if err = app.writeJSON(w, envelope{"movie": movie}, 200, headers); err != nil {
-		app.serverErrorResponse(w)
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 }
@@ -49,13 +49,13 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 
 	err := app.readJSON(w, r, &input)
 	if err != nil {
-		app.errorResponse(w, http.StatusInternalServerError, err.Error())
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 
 	err = app.writeJSON(w, envelope{"movie": input}, http.StatusCreated, nil)
 	if err != nil {
-		app.errorResponse(w, http.StatusInternalServerError, err.Error())
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 }
