@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -64,20 +65,27 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 		case errors.Is(err, io.ErrUnexpectedEOF):
 			return fmt.Errorf("body contains badly-formed JSON")
 
+		case errors.As(err, &unmarshalTypeError):
+			if unmarshalTypeError.Field == "" {
+				return fmt.Errorf("body contains incorrect JSON type for field %s", unmarshalTypeError.Field)
+			}
+			return fmt.Errorf("body contains incorrect JSON type (at character %d)", unmarshalTypeError.Offset)
+
 		case errors.Is(err, io.EOF):
 			return fmt.Errorf("body must not be empty")
 
-		case errors.As(err, &unmarshalTypeError):
-			if unmarshalTypeError.Field == "" {
-				return fmt.Errorf("%s is required", unmarshalTypeError.Field)
-			}
-			return fmt.Errorf("body contains incorrect JSON type for field: %s", unmarshalTypeError.Field)
+		case errors.As(err, &maxBytesError):
+			return fmt.Errorf("body must not be larger than %d bytes(1 MB)", maxBytesError.Limit)
+
+		case strings.HasPrefix(err.Error(), "json: unknown field "):
+			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
+			return fmt.Errorf("body contains unknown key %s", fieldName)
 
 		case errors.As(err, &invalidUnmarshalError):
 			panic(err)
 
-		case errors.As(err, &maxBytesError):
-			return fmt.Errorf("body must not be larger than %d bytes(1 MB)", maxBytesError.Limit)
+		default:
+			return err
 		}
 	}
 

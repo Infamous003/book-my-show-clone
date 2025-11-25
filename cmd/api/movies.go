@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Infamous003/book-my-show-clone/internal/data"
+	"github.com/Infamous003/book-my-show-clone/internal/data/validator"
 )
 
 func (app *application) getMovieHandler(w http.ResponseWriter, r *http.Request) {
@@ -43,13 +44,31 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 		Description string       `json:"description"`
 		Year        int32        `json:"year"`
 		Runtime     data.Runtime `json:"runtime"`
-		Genres      []*string    `json:"genres"`
-		Languages   []*string    `json:"languages"`
+		Genres      []string     `json:"genres"`
+		Languages   []string     `json:"languages"`
 	}
 
 	err := app.readJSON(w, r, &input)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+
+	movie := &data.Movie{
+		Title:       input.Title,
+		Description: input.Description,
+		Year:        input.Year,
+		Runtime:     input.Runtime,
+		Genres:      input.Genres,
+		Languages:   input.Languages,
+	}
+
+	data.ValidateMovie(v, movie)
+
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
